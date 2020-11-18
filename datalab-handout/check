@@ -1,0 +1,7 @@
+#!/bin/sh
+
+./dlc bits.c
+if [ $(./dlc bits.c | wc -l) = 0 ]; then
+    make btest
+    ./btest
+fi
