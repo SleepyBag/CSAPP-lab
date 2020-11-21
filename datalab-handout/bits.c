@@ -212,7 +212,10 @@ int isAsciiDigit(int x) {
  *   Rating: 3
  */
 int conditional(int x, int y, int z) {
-  return 2;
+  x = (!!x) + ~0;
+  int mask_z = x;
+  int mask_y = ~mask_z;
+  return (mask_y & y) | (mask_z & z);
 }
 /*
  * isLessOrEqual - if x <= y  then return 1, else return 0
@@ -222,7 +225,12 @@ int conditional(int x, int y, int z) {
  *   Rating: 3
  */
 int isLessOrEqual(int x, int y) {
-  return 2;
+  int sign_x = x >> 31;
+  int sign_y = y >> 31;
+  int sign_diff = sign_x ^ sign_y;
+  int negate_x = ~(x + ~0);
+  int sign_y_minus_x = (y + negate_x) >> 31;
+  return !!((sign_diff & sign_x) | ((!sign_diff) & !sign_y_minus_x));
 }
 //4
 /*
@@ -234,7 +242,12 @@ int isLessOrEqual(int x, int y) {
  *   Rating: 4
  */
 int logicalNeg(int x) {
-  return 2;
+  x = x | (x >> 16);
+  x = x | (x >> 8);
+  x = x | (x >> 4);
+  x = x | (x >> 2);
+  x = x | (x >> 1);
+  return (x & 1) ^ 1;
 }
 /* howManyBits - return the minimum number of bits required to represent x in
  *             two's complement
