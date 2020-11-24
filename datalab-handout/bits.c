@@ -212,9 +212,10 @@ int isAsciiDigit(int x) {
  *   Rating: 3
  */
 int conditional(int x, int y, int z) {
+  int mask_z, mask_y;
   x = (!!x) + ~0;
-  int mask_z = x;
-  int mask_y = ~mask_z;
+  mask_z = x;
+  mask_y = ~mask_z;
   return (mask_y & y) | (mask_z & z);
 }
 /*
@@ -262,7 +263,49 @@ int logicalNeg(int x) {
  *  Rating: 4
  */
 int howManyBits(int x) {
-  return 0;
+  int origin_x = x;
+  int n1 = ~0;
+  int ans = 1;
+  int INT_MIN = 1 << 31;
+  int negative_mask = x >> 31;
+  int high_bits, low_bits, mask_high_bits;
+  int not_min_mask;
+  x = (negative_mask & ~x) | (~negative_mask & x);
+
+  high_bits = x >> 16;
+  low_bits = x & ((0xff << 8) | 0xff);
+  mask_high_bits = (!high_bits) + n1;
+  ans = ans + (mask_high_bits & 16);
+  x = (mask_high_bits & high_bits) | (~mask_high_bits & low_bits);
+
+  high_bits = x >> 8;
+  low_bits = x & 0xff;
+  mask_high_bits = (!high_bits) + n1;
+  ans = ans + (mask_high_bits & 8);
+  x = (mask_high_bits & high_bits) | (~mask_high_bits & low_bits);
+
+  high_bits = x >> 4;
+  low_bits = x & 0xf;
+  mask_high_bits = (!high_bits) + n1;
+  ans = ans + (mask_high_bits & 4);
+  x = (mask_high_bits & high_bits) | (~mask_high_bits & low_bits);
+
+  high_bits = x >> 2;
+  low_bits = x & 0x3;
+  mask_high_bits = (!high_bits) + n1;
+  ans = ans + (mask_high_bits & 2);
+  x = (mask_high_bits & high_bits) | (~mask_high_bits & low_bits);
+
+  high_bits = x >> 1;
+  low_bits = x & 0x1;
+  mask_high_bits = (!high_bits) + n1;
+  ans = ans + (mask_high_bits & 1);
+  x = (mask_high_bits & high_bits) | (~mask_high_bits & low_bits);
+
+  ans = ans + x;
+
+  not_min_mask = (!(origin_x ^ INT_MIN)) + n1;
+  return (ans & not_min_mask) | (32 & ~not_min_mask);
 }
 //float
 /*
