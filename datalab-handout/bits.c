@@ -320,7 +320,22 @@ int howManyBits(int x) {
  *   Rating: 4
  */
 unsigned floatScale2(unsigned uf) {
-  return 2;
+  unsigned sign_mask = 0x80000000;
+  unsigned exp_mask = 0x7f800000;
+  unsigned tail_mask = 0x007fffff;
+  unsigned exp = uf & exp_mask;
+  if (exp == exp_mask) {
+    return uf;
+  }
+  if (exp == 0) {
+    unsigned tail = uf & tail_mask;
+    unsigned sign = uf & sign_mask;
+    return sign | (tail * 2);
+  }
+  exp = ((exp >> 23) + 1) << 23;
+  uf &= (~exp_mask);
+  uf |= exp;
+  return uf;
 }
 /*
  * floatFloat2Int - Return bit-level equivalent of expression (int) f
@@ -335,7 +350,30 @@ unsigned floatScale2(unsigned uf) {
  *   Rating: 4
  */
 int floatFloat2Int(unsigned uf) {
-  return 2;
+  unsigned sign_mask = 0x80000000;
+  unsigned exp_mask = 0x7f800000;
+  unsigned tail_mask = 0x007fffff;
+  unsigned sign = uf & sign_mask;
+  int exp = ((uf & exp_mask) >> 23) - 127;
+  unsigned tail = uf & tail_mask;
+  unsigned ans;
+  if (exp > 31 || (exp == 31 && tail == tail_mask))
+    return 0x80000000u;
+  if (exp < 0)
+    return 0;
+  if (exp == -127)
+    ans = tail;
+  else {
+    tail |= 0x00800000;
+    if (exp < 23)
+      tail >>= 23 - exp;
+    else
+      tail <<= exp - 23;
+    ans = tail;
+  }
+  if (sign)
+    ans = 1 + ~ans;
+  return ans;
 }
 /*
  * floatPower2 - Return bit-level equivalent of the expression 2.0^x
