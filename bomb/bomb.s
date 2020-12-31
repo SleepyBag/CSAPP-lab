@@ -1178,12 +1178,18 @@ Disassembly of section .text:
 
 0000000000400fce <func4>:
   400fce:	/-------> 48 83 ec 08          	sub    rsp,0x8
+  ; eax = a - b
+  ; sign = eax >> 31
+  ; eax += sign
+  ; eax //= 2
   400fd2:	|         89 d0                	mov    eax,edx
   400fd4:	|         29 f0                	sub    eax,esi
   400fd6:	|         89 c1                	mov    ecx,eax
   400fd8:	|         c1 e9 1f             	shr    ecx,0x1f
   400fdb:	|         01 c8                	add    eax,ecx
   400fdd:	|         d1 f8                	sar    eax,1
+  ; ecx = eax + b
+  ; if ecx > edi, func4
   400fdf:	|         8d 0c 30             	lea    ecx,[rax+rsi*1]
   400fe2:	|         39 f9                	cmp    ecx,edi
   400fe4:	|     /-- 7e 0c                	jle    400ff2 <func4+0x24>
@@ -1202,19 +1208,27 @@ Disassembly of section .text:
 
 000000000040100c <phase_4>:
   40100c:	       48 83 ec 18          	sub    rsp,0x18
+  ; rsp+0xc is the second number
   401010:	       48 8d 4c 24 0c       	lea    rcx,[rsp+0xc]
+  ; rsp+0x8 is the first number
   401015:	       48 8d 54 24 08       	lea    rdx,[rsp+0x8]
   40101a:	       be cf 25 40 00       	mov    esi,0x4025cf
   40101f:	       b8 00 00 00 00       	mov    eax,0x0
   401024:	       e8 c7 fb ff ff       	call   400bf0 <__isoc99_sscanf@plt>
   401029:	       83 f8 02             	cmp    eax,0x2
   40102c:	/----- 75 07                	jne    401035 <phase_4+0x29>
+  ; the first number must be less than or equal to 0xe
   40102e:	|      83 7c 24 08 0e       	cmp    DWORD PTR [rsp+0x8],0xe
   401033:	|  /-- 76 05                	jbe    40103a <phase_4+0x2e>
   401035:	\--|-> e8 00 04 00 00       	call   40143a <explode_bomb>
   40103a:	   \-> ba 0e 00 00 00       	mov    edx,0xe
   40103f:	       be 00 00 00 00       	mov    esi,0x0
   401044:	       8b 7c 24 08          	mov    edi,DWORD PTR [rsp+0x8]
+  ; func4(edi: the first number, esi: 0, edx: 0xe)
+  ; the content of func4 is not important.
+  ; because the first number is less than 0xe,
+  ; we can just try all the possible values of the first number
+  ; and get the returned value of func4(first, 0, 0xe) by gdb
   401048:	       e8 81 ff ff ff       	call   400fce <func4>
   40104d:	       85 c0                	test   eax,eax
   40104f:	/----- 75 07                	jne    401058 <phase_4+0x4c>
@@ -1233,13 +1247,18 @@ Disassembly of section .text:
   401073:	          48 89 44 24 18       	mov    QWORD PTR [rsp+0x18],rax
   401078:	          31 c0                	xor    eax,eax
   40107a:	          e8 9c 02 00 00       	call   40131b <string_length>
+  ; input must be a 6-length string
   40107f:	          83 f8 06             	cmp    eax,0x6
   401082:	/-------- 74 4e                	je     4010d2 <phase_5+0x70>
   401084:	|         e8 b1 03 00 00       	call   40143a <explode_bomb>
   401089:	+-------- eb 47                	jmp    4010d2 <phase_5+0x70>
+  ; rax is the index of current character
+  ; ecx is the current character
   40108b:	|  /----> 0f b6 0c 03          	movzx  ecx,BYTE PTR [rbx+rax*1]
   40108f:	|  |      88 0c 24             	mov    BYTE PTR [rsp],cl
   401092:	|  |      48 8b 14 24          	mov    rdx,QWORD PTR [rsp]
+  ; cut the lowest 4 bits of the ascii code off:
+  ; @ -> 0, A -> 1, B -> 2
   401096:	|  |      83 e2 0f             	and    edx,0xf
   401099:	|  |      0f b6 92 b0 24 40 00 	movzx  edx,BYTE PTR [rdx+0x4024b0]
   4010a0:	|  |      88 54 04 10          	mov    BYTE PTR [rsp+rax*1+0x10],dl
