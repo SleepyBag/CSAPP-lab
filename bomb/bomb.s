@@ -1297,6 +1297,7 @@ Disassembly of section .text:
   401106:	             e8 51 03 00 00       	call   40145c <read_six_numbers>
   40110b:	             49 89 e6             	mov    r14,rsp
   40110e:	             41 bc 00 00 00 00    	mov    r12d,0x0
+  ; all the six numbers must be less than or equal to 6, and they must be distinct
   401114:	/----------> 4c 89 ed             	mov    rbp,r13
   401117:	|            41 8b 45 00          	mov    eax,DWORD PTR [r13+0x0]
   40111b:	|            83 e8 01             	sub    eax,0x1
@@ -1405,6 +1406,7 @@ Disassembly of section .text:
   401255:	    e8 76 f9 ff ff       	call   400bd0 <strtol@plt>
   40125a:	    48 89 c3             	mov    rbx,rax
   40125d:	    8d 40 ff             	lea    eax,[rax-0x1]
+  ; the number should be less than or equal to 1001
   401260:	    3d e8 03 00 00       	cmp    eax,0x3e8
   401265:	/-- 76 05                	jbe    40126c <secret_phase+0x2a>
   401267:	|   e8 ce 01 00 00       	call   40143a <explode_bomb>
